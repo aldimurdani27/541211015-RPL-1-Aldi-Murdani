@@ -1,61 +1,88 @@
-let user = [
-    {id: 1, nama: "aldi", email: "aldi@gmail.com"},
-    {id: 2, nama: "murdani", email: "murdani@gmail.com"},
-]
+const User = require('../models/User')
 
 module.exports = {
-    index: (req, res) => {
-        if(user.length > 0){
-          res.json({
-            status: true,
-            data: user,
-            method: req.method,
-            url: req.url
-          })
-        }else{
-          res.json({
-            status: false,
-            message: "data masih kosong"
-          })
+  //get all user
+    index: async (req, res) => {
+      try {
+          const users = await User.find()
+          if(users.length > 0){
+            res.status(200).json({
+              status: true,
+              data: users,
+              method: req.method,
+              url: req.url
+            })
+          }else{
+            res.json({
+              status: false,
+              message: "data masih kosong"
+            })
+          }
+      } catch (error) {
+          res.status(400).json({succes: false})
+      }
+
+      },
+      // get a user
+      show: async (req, res) => {
+        try {
+            const user = await User.findById(req.params.id)
+            res.json({
+              status: true,
+              data: user,
+              method: req.method,
+              url: req.url,
+              message: "Data Behasil Didapat"
+            })
+        } catch (error) {
+          res.status(400).json({succes: false})
         }
       },
-      store: (req, res) => {
-        user.push(req.body)
-        res.json({
-          status: true,
-          data: user,
-          method: req.method,
-          url: req.url,
-          message: "Data berhasil ditambahkan"
-        })
-      },
-      update: (req, res) => {
-        const id = req.params.id
-        user.filter(user =>{
-          if (user == id){
-            user.nama = req.body.nama
-            user.email = req.body.email
-            return user
+      store: async (req, res) => {
+        try {
+            const user = await User.create(req.body)
+            res.status(200).json({
+              status: true,
+              data: user,
+              method: req.method,
+              url: req.url,
+              message: "Data berhasil ditambahkan"
+            })
+            
+        } catch (error) {
+            res.status(400).json({succes: false})
           }
-        })
-        res.json({
-          status: true,
-          data: user,
-          method: req.method,
-          url: req.url,
-          message: "Data Behasil Diubah"
-        })
+    },
+      update: async (req, res) => {
+        try {
+            const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+              new: true,
+              runValidators: true
+            })
+            res.json({
+              status: true,
+              data: user,
+              method: req.method,
+              url: req.url,
+              message: "Data Behasil Diubah"
+            })
+        } catch (error) {
+          res.status(400).json({succes: false})
+        }
+
       },
-      delete: (req, res) => {
-        const id = req.params.id
-        user = user.filter(user => user.id !=id )
-    
-        res.json({
-          status: true,
-          data: user,
-          method: req.method,
-          url: req.url,
-          message: "Data Berhasil Dihapus"
-        })
-      }
+      delete: async (req, res) => {
+        try {
+            await User.findByIdAndDelete(req.params.id)
+            res.json({
+              status: true,
+              method: req.method,
+              url: req.url,
+              message: "Data Berhasil Dihapus"
+            })
+        } catch (error) {
+          res.status(400).json({succes: false})
+        }
+      },
+
 }
